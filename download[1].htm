@@ -1,0 +1,101 @@
+<HTML>
+	<HEAD>
+	        <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ks_c_5601-1987">
+
+		<TITLE>간단한 파일 다운로드 예제</TITLE>
+		
+		<SCRIPT FOR="FileDownloadManager" Event="OnError(nCode, sMsg, sDetailMsg)" language="javascript">
+			OnErrorDownloadManager(nCode, sMsg, sDetailMsg);
+		</SCRIPT>
+		<SCRIPT LANGUAGE="JavaScript">
+			function OnErrorDownloadManager(nCode, sMsg, sDetailMsg)
+			{
+				alert(nCode);
+				alert(sMsg);
+				alert(sDetailMsg);
+			}
+		</SCRIPT>
+
+		<SCRIPT LANGUAGE="VBS" for="FileDownloadManager" event="OnDownload_Click()"> 
+			Msgbox "OnDownload_Click 이벤트 발생"
+			winstyle= "height=445,width=445, status=no,toolbar=no,menubar=no,location=no"
+			window.open "FileDownloadMonitor.htm",null,winstyle
+		</SCRIPT>
+	
+		<script LANGUAGE="JavaScript">
+			function OnLoading()
+			{
+				//파일의 URL, 파일 크기, 파일 명(파일명은 생략 가능)
+				//document.all("FileDownloadManager").AddFile("http://211.232.104.156/DEXTUploadXSamples/Download/DEXTUploadXTestFile1.tst", 10000000);
+				//document.all("FileDownloadManager").AddFile("http://211.232.104.156/DEXTUploadXSamples/Download/DEXTUploadXTestFile2.tst", 20000000);
+				//document.all("FileDownloadManager").AddFile("http://211.232.104.156/DEXTUploadXSamples/Download/DEXTUploadXTestFile3.tst", 30000000, "DevpiaTest3.tst");
+				document.all("FileDownloadManager").AddFile("http://211.232.104.156/DEXTUploadXSamples/Download/"+escape("!@#'$~`%^&().,;+=_-2.hwp"), 28160, "!@#'$~`%^&().,;+=_-2.hwp");
+				//document.all("FileDownloadManager").AddFile("http://211.232.104.156/DEXTUploadXSamples/Download/test.hwp", 28160);
+			}
+			
+			function OpenDownloadMonitor()
+			{
+				winstyle="height=420,width=445, status=no,toolbar=no,menubar=no,location=no";
+				window.open("FileDownloadMonitor.htm",null,winstyle);
+			}
+		</script>
+		<SCRIPT LANGUAGE="VBS" for="FileDownloadManager" event="OnFile_DoubleClick(nItemIndex)">
+             'window.open document.all("FileDownloadManager")(nItemIndex).URL,null,""
+			 window.open "http://211.232.104.156/DEXTUploadXSamples/Download/test.hwp",null,""
+		</SCRIPT>
+	</HEAD>
+
+	<BODY onload="OnLoading()">
+	        <P><OBJECT ID="FileDownloadManager" height="200" width="450"
+	        CodeBase = "http://211.232.104.156/DEXTUploadX/DEXTUploadX.cab#version=2,8,2,0"
+	        CLASSID="CLSID:535AE497-8E85-45F8-AF36-2DFCBCA8B68A"></OBJECT></P>
+	        <P><INPUT type="button" value="다운로드 모니터 창 띄우기" onclick="OpenDownloadMonitor()">        
+			<br /><br />
+			
+			
+			
+		<!-- #############################  아래 코드는 예제 설명을 위한 테이블입니다.  ############################# -->	
+		<table border="0" width="700">
+		    <tr>
+		        <td>
+		            <table border="0">
+		                <tr>
+		                    <td width="72"><font size=2 face="돋움"><B>예제 설명 : </B><br /></font>
+		                    </td>
+		                    <td><font size=2 face="돋움">간단한 파일 다운로드 예제입니다.<br /></font>
+		                    </td>
+		                </tr>
+		            </table>
+		        </td>
+		    </tr>
+		    <tr>
+		        <td>
+		            <table border="0">
+		                <tr>
+		                    <td width="105"><font size=2 face="돋움"><B>기본 설치 경로 : </B><br /></font>
+		                    </td>
+		                    <td><font size=2 face="돋움">C:\Program Files\DEVPIA\DEXTUploadX\samples\Download\SimpleDownload<br /></font>
+		                    </td>
+		                </tr>
+		            </table>
+		        </td>
+		    </tr>
+		    <tr>
+		        <td>
+		            <table border="0">
+		                <tr>
+		                    <td width="245"><font size=2 face="돋움"><B>사용된 API (매뉴얼->객체 레퍼런스) :  </B><br /></font>
+		                    </td>
+		                    <td><font size=2 face="돋움">-<br />
+		                        </font>
+		                    </td>
+		                </tr>
+		            </table>
+		        </td>
+		    </tr>		    
+		</table>
+	</BODY>
+</HTML>
+
+
+		

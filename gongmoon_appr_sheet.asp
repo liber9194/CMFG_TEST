@@ -1,0 +1,237 @@
+<%@ LANGUAGE="VBSCRIPT" %>
+<!--#include file="../../../../dbopen.asp"-->
+<!--#include file="../../../../ReqVariant.asp"-->
+<!--#include file="misop.inc" -->
+<!-- #include file="../../../../default_properties.asp" -->
+<%
+'인증체크 추가 2016.04.26
+IF session("db_id") = "" Then
+	'Response.Redirect "http://sfg.dohwa.co.kr/"
+	Response.Redirect g_home_url
+End IF
+
+
+'페이지 접속로그 추가 2016.04.21==================================================
+
+	strUserIP  = Request.ServerVariables("REMOTE_HOST")	'로그인 IP 기록
+	strSql = " INSERT INTO PAGE_LOG_INFO([IP],[EMP_ID],[EMP_NAME],[PAGE_NAME],[PAGE_ACTION]) "
+    strSql = strSql &   " VALUES('" & strUserIP & "'"
+	strSql = strSql &   " ,'" & db_id & "'"
+	strSql = strSql &   " ,'" & db_name & "' "
+	strSql = strSql &   " ,'gongmoon_appr_sheet.asp' "
+	strSql = strSql &   " ,'공문결재현황 목록'"
+	strSql = strSql &   " ) "
+
+	Set Result = DbCon.execute(strSql)
+	Set Result=Nothing
+	
+'페이지 접속로그 추가 2016.04.21==================================================
+
+number		= Request("number")
+
+
+QSelect  = Request("QSelect")
+
+Qgubun   = Request("Qgubun")
+
+type__  = Request("type__")
+
+db_id 	 	= session("db_id")
+db_level 	 	= session("db_level")
+
+site_code 	 	= session("site_code")
+
+search = Request("search")
+search_txt = Request("search_txt")
+
+%>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<title>mail_list</title>
+<meta name="GENERATOR" Content="Microsoft Visual Studio 7.0">
+<meta name="CODE_LANGUAGE" Content="C#">
+<meta name="vs_defaultClientScript" content="JavaScript">
+<meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+<LINK rel="stylesheet" href="../../Home/css/default.css">
+<link	REL="stylesheet" TYPE="text/css"	HREF="./css/admin.css">
+<script language="JScript" src="../ezEmail/lang/ezEmail_ko.js"></script>
+<script language="JavaScript" src="../../Home/myoffice/common/mouseeffect.js"></script>
+<STYLE> 
+P { MARGIN-BOTTOM: 0mm; MARGIN-TOP: 0mm } 
+</STYLE>
+
+<script language="JScript" src="../ezEmail/js/emails.js"></script>
+<script language="JScript" src="../ezEmail/js/email_tree.js"></script>
+<script language="JScript" src="../ezEmail/js/string_component.js"></script>
+
+<script>
+function goToPage1()
+{
+	var search_txt = document.all.search_txt.value;
+	search_txt = search_txt.replace(/\s/gi, ""); 
+	
+	window.location.href = "gongmoon_appr_sheet.asp?search=" + document.all.search.value + "&search_txt=" + search_txt;
+}
+</script>
+
+</HEAD>
+<!--<body style="BEHAVIOR:url('#default#userData');OVERFLOW:hidden" id="theBody" class="mainbody">-->
+<body style="BEHAVIOR:url('#default#userData');OVERFLOW-y:auto;" id="theBody" class="mainbody">
+
+	<table class="layout">
+
+		<tr>
+			<% if db_level = "S" OR db_level = "Z" THEN %>		
+				<td valign="top" height="40"><h1>PM 결재현황</h1>
+			<% elseif db_level = "P" then %>
+				<td valign="top" height="40"><h1>공문결재현황</h1>
+			<% END IF %>		
+
+		
+		<!-- 본문 시작 -->
+		<% if db_level = "S" OR db_level = "Z" THEN %>	
+			<div id="mainmenu" style="height:45px;"> 
+				<ul id="tb_Parent">
+					<li style="background:none;padding:0">  
+						<select name="search" style="WIDTH:110px">       
+							<option VALUE="pm_id" <% if search = "pm_id" then response.write "selected" end if %>>PM사번</option>
+							<option VALUE="pm_name" <% if search = "pm_name" then response.write "selected" end if %>>PM성명</option>				
+						</select>
+					</li>
+				
+					<input type='textbox' size="15" name='search_txt' VALUE="<%=search_txt%>" onkeypress="javascript : if (event.keyCode == 13) goToPage1();">
+			  
+					<li><span onClick="goToPage1();">검색</span></li>
+										
+				</ul>
+				<ul id="tb_Parent" style="padding-left:255">
+					<h2>* 결재된 문서 : 후결재/결재올림 처리한 문서</h2>
+				</ul>
+			</div>
+			<%
+			Set rs=Server.CreateObject("ADODB.Recordset")
+			rs.CursorType=1
+		
+			sql = " select a.c_userid, c_name = replace(a.c_name, ' ', ''), pm = replace(a.c_name, ' ', '') + ' (' + a.c_userid + ')' "
+			
+			if Request.ServerVariables("http_host") = g_domain then
+				sql = sql & " from [" & g_cmfgDB & "].cug_Test.dbo.user_tbl a "
+			else
+				sql = sql & " from sfg.cug_Test.dbo.user_tbl a "
+			end if
+						
+			sql = sql & " 	inner join dh_sap.dbo.tbl_sap_emp_info b on a.c_userid = b.emp_id "
+			sql = sql & " where a.c_level = 'P' "
+			sql = sql & " 	and b.RETIRE_DT > (select format(getdate(), 'yyyyMMdd')) "
+			
+			if search_txt <> "" then
+				if search = "pm_id" then
+					sql = sql & " and a.c_userid = '" & search_txt & "' "
+				elseif search = "pm_name" then
+					sql = sql & " and replace(a.c_name, ' ', '') = '" & search_txt & "' "
+				end if
+			end if
+			
+			rs.Open sql, DbCon_Mis
+			%>			
+			<table border="1">
+				<tr>
+					<th width="5">No</th>
+					<th width="100">해당PM</th>
+					<th width="70" style="text-align:center;">접수문서(건)</th>
+					<th width="70" style="text-align:center;">읽음 문서(건)</th>
+					<th width="70" style="text-align:center;">안읽음 문서(건)</th>
+					<th width="70" style="text-align:center;">결재된 문서(건)</th>
+				</tr>
+				
+			<%		
+			if rs.Recordcount <> 0 then
+				cnt = 0
+			%>				
+				<%
+				for i = 0 to rs.Recordcount - 1
+				
+					Set DbRec=Server.CreateObject("ADODB.Recordset")
+					DbRec.CursorType=1
+		
+					sql = "			select count(*) as 'receive_cnt', "
+					sql = sql & " 		count(case when b.o_visited > 0 then 1 end) as 'read_cnt', "
+					sql = sql & " 		count(case when b.o_visited = 0 then 1 end) as 'unread_cnt', "
+					sql = sql & " 		count(case when b.Result_Add = '1' or b.Result_Add = '3' then 1 end) as 'appr_cnt' " '후결재, 결재올림을 결재된 문서로 인정
+					sql = sql & " 	from office_tbl a "
+					sql = sql & " 		inner join receive_tbl b on a.o_seq = b.o_seq and b.receive_del = '' "
+					sql = sql & " 	where b.o_receive_id = '" & rs("c_userid") & "' "
+					sql = sql & " 		and a.office_del = '' "
+					sql = sql & " 		and b.o_rdel_flag = 0 "
+			
+					DbRec.Open sql, DbCon
+					
+					if DbRec.Recordcount <> 0 then
+						cnt = cnt + 1
+				%>			
+						<tr height="25">
+							<td style="text-align:center;padding:5px;"><%=cnt%></td>
+							<td style="text-align:center;padding:5px;"><%=rs("pm")%></td>
+							<td style="text-align:right;padding:5px;"><%=formatnumber(DbRec("receive_cnt"),0,-1,0,-1)%></td>
+							<td style="text-align:right;padding:5px;"><%=formatnumber(DbRec("read_cnt"),0,-1,0,-1)%></td>
+							<td style="text-align:right;padding:5px;"><%=formatnumber(DbRec("unread_cnt"),0,-1,0,-1)%></td>
+							<td style="text-align:right;padding:5px;"><%=formatnumber(DbRec("appr_cnt"),0,-1,0,-1)%></td>
+						</tr>
+					<% end if %>
+					<% set DbRec = Nothing %>
+				<% rs.MoveNext %>
+				<% next %>			
+			<% end if %>
+			<% set rs = Nothing %>			
+		
+			</table>			
+		<% elseif db_level = "P" then %>
+			<%
+			
+			Set DbRec=Server.CreateObject("ADODB.Recordset")
+			DbRec.CursorType=1
+		
+			sql = "			select count(*) as 'receive_cnt', "
+			sql = sql & " 		count(case when b.o_visited > 0 then 1 end) as 'read_cnt', "
+			sql = sql & " 		count(case when b.o_visited = 0 then 1 end) as 'unread_cnt', "
+			sql = sql & " 		count(case when b.Result_Add = '1' or b.Result_Add = '3' then 1 end) as 'appr_cnt' "
+			sql = sql & " 	from office_tbl a "
+			sql = sql & " 		inner join receive_tbl b on a.o_seq = b.o_seq and b.receive_del = '' "
+			sql = sql & " 	where b.o_receive_id = '" & db_id & "' "
+			sql = sql & " 		and a.office_del = '' "
+			sql = sql & " 		and b.o_rdel_flag = 0 "
+			
+			DbRec.Open sql, DbCon
+
+			if DbRec.Recordcount <> 0 then
+			%>
+				<table border="1">
+					<tr>
+						<th width="70" style="text-align:center;">접수문서(건)</th>
+						<th width="70" style="text-align:center;">읽음 문서(건)</th>
+						<th width="70" style="text-align:center;">안읽음 문서(건)</th>
+						<th width="70" style="text-align:center;">결재된 문서(건)</th>
+					</tr>
+					<tr height="25">
+						<td style="text-align:right;padding:5px;"><%=formatnumber(DbRec("receive_cnt"),0,-1,0,-1)%></td>
+						<td style="text-align:right;padding:5px;"><%=formatnumber(DbRec("read_cnt"),0,-1,0,-1)%></td>
+						<td style="text-align:right;padding:5px;"><%=formatnumber(DbRec("unread_cnt"),0,-1,0,-1)%></td>
+						<td style="text-align:right;padding:5px;"><%=formatnumber(DbRec("appr_cnt"),0,-1,0,-1)%></td>
+					</tr>			
+				</table>
+			<% end if %>
+		<% END IF %>
+		<!-- 본문 끝 -->
+		
+		</td>
+	</tr>
+	</table>
+	
+	<% set DbRec = Nothing %>
+</body>
+</HTML>
+
+
+
