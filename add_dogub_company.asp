@@ -28,7 +28,7 @@
 var g_ExchangeVS = "<%=m_sus%>";
 function fnMessage(){
 	if (g_ExchangeVS == 'ok') {
-		alert("추가되었습니다!");
+		alert("추가되었습니다!!!!!");
 		parent.goSearch();
 	}
 }
